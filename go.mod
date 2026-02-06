@@ -1,4 +1,4 @@
-module lolcat-go
+module github.com/lz-fkn/lolcat-go
 
 go 1.25.5
 
