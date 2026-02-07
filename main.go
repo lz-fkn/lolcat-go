@@ -312,27 +312,44 @@ type ansiMatch struct {
 }
 
 func printLine(str string, opts options, chomped bool) float64 {
-	matches := scanAnsiEscapes(str)
-	
-	for i, match := range matches {
-		if match.char == "" {
-			fmt.Print(match.escape)
-			continue
-		}
+    matches := scanAnsiEscapes(str)
 
-		colorR, colorG, colorB := rainbow(opts.freq, opts.os+float64(i)/opts.spread)
-		
-		if opts.invert {
-			fmt.Printf("%s\x1b[48;2;%d;%d;%dm%s\x1b[49m", match.escape, colorR, colorG, colorB, match.char)
-		} else {
-			fmt.Printf("%s\x1b[38;2;%d;%d;%dm%s\x1b[39m", match.escape, colorR, colorG, colorB, match.char)
-		}
-	}
+    mode := 38
+    if opts.invert {
+        mode = 48
+    }
+    resetCode := mode + 1
 
-	if !chomped {
-		return opts.os + float64(len(matches))/opts.spread
-	}
-	return opts.os
+    for i, match := range matches {
+        if match.char == "" {
+            fmt.Print(match.escape)
+            continue
+        }
+
+        colorR, colorG, colorB := rainbow(opts.freq, opts.os+float64(i)/opts.spread)
+        
+        var colorSeq string
+        if opts.truecolor {
+            colorSeq = fmt.Sprintf("%d;2;%d;%d;%d", mode, colorR, colorG, colorB)
+        } else {
+            code := rgbToAnsi256(colorR, colorG, colorB)
+            colorSeq = fmt.Sprintf("%d;5;%d", mode, code)
+        }
+
+        fmt.Printf("%s\x1b[%sm%s\x1b[%dm", match.escape, colorSeq, match.char, resetCode)
+    }
+
+    if !chomped {
+        return opts.os + float64(len(matches))/opts.spread
+    }
+    return opts.os
+}
+
+func rgbToAnsi256(r, g, b int) int {
+	qr := int(math.Floor(float64(r) / 255 * 5))
+	qg := int(math.Floor(float64(g) / 255 * 5))
+	qb := int(math.Floor(float64(b) / 255 * 5))
+	return 16 + (36 * qr) + (6 * qg) + qb
 }
 
 func scanAnsiEscapes(s string) []ansiMatch {
