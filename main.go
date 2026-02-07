@@ -17,7 +17,7 @@ import (
 	"github.com/spf13/pflag"
 )
 
-const version = "1.1.1"
+const version = "1.1.3"
 const origVersion = "100.0.1"
 
 type options struct {

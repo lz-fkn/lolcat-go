@@ -16,6 +16,8 @@ targets=(
     "linux/arm/6"
     "linux/arm"
     "linux/arm64"
+    "darwin/amd64"
+    "darwin/arm64"
 )
 
 for target in "${targets[@]}"; do
